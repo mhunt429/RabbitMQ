@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using publisher.services;
+using publisher.interfaces;
 
 namespace publisher
 {
@@ -27,6 +29,7 @@ namespace publisher
         {
             services.AddMvc(options => options.EnableEndpointRouting = false);
             services.AddControllers();
+            services.AddSingleton<IMessageService, MessageService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

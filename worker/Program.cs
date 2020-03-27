@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 namespace worker
 {
     class Program
@@ -26,9 +28,41 @@ namespace worker
         }
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            Console.WriteLine("Posting a Message!");
-            PostMessage("Hello World").Wait();
+            string [] testStrings = new string[] { "one", "two", "three", "four", "five" };
+
+            Console.WriteLine("Sleeping to wait for RabbitMQ");
+            Task.Delay(1000).Wait();
+            Console.WriteLine("Posting messages to webApi");
+            for(int i = 0; i< 5; i++)
+            {
+                PostMessage(testStrings[i]).Wait();
+            }
+
+            Task.Delay(1000).Wait();
+
+            Console.WriteLine("Cosuming Queue Now");
+
+            ConnectionFactory factory = new ConnectionFactory() { HostName = "rabbitmq", Port = 5672 };
+            factory.UserName = "guest";
+            factory.Password = "guest";
+            IConnection conn = factory.CreateConnection();
+            IModel channel = conn.CreateModel();
+            channel.QueueDeclare(queue: "hello",
+                                    durable: false,
+                                    exclusive: false,
+                                    autoDelete: false,
+                                    arguments: null);
+
+            var consumer = new EventingBasicConsumer(channel);
+            consumer.Received += (model, ea) =>
+             {
+                 var body = ea.Body;
+                 var message = Encoding.UTF8.GetString(body);
+                 Console.WriteLine(" [x] Received from Rabbit: {0} ", message);
+             };
+
+            channel.BasicConsume(queue: "hello", autoAck: true, consumer: consumer);
+
         }
     }
 }

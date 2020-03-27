@@ -2,15 +2,25 @@ version: '3.4'
 
 services:
   publisher:
-    image: publisher:latest
-    build:
-      context: ./publisher
-      dockerfile: Dockerfile
+    build: ./publisher
+    restart: always
 
   worker:
-    image: worker:latest
+    build: ./worker
+    restart: always
     depends_on:
       - "publisher"
-    build:
-      context: ./worker
-      dockerfile: Dockerfile
+      - "rabbitmq"
+
+  rabbitmq: # login guest:guest
+    image: rabbitmq:3-management
+    hostname: "rabbitmq"
+    labels:
+      NAME: "rabbitmq"
+    ports:
+    - "4369:4369"
+    - "5671:5671"
+    - "5672:5672"
+    - "25672:25672"
+    - "15671:15671"
+    - "15672:15672"

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.Json;
+using publisher.interfaces;
 
 namespace publisher.Controllers
 {
@@ -13,6 +14,13 @@ namespace publisher.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
+        private readonly IMessageService _messageService;
+
+        public ValuesController(IMessageService messageService)
+        {
+            _messageService = messageService;
+        }
+
         [HttpGet]
         public ActionResult<IEnumerable<string>> Index()
         {
@@ -20,9 +28,11 @@ namespace publisher.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]JsonElement body) { 
+        public IActionResult Post([FromBody]string body) { 
             string json = System.Text.Json.JsonSerializer.Serialize(body);
-             return Ok("{\"success\": \"true\"}");
+            Console.WriteLine("Received a Post:" + body);
+            _messageService.Enqueue(body);
+            return Ok(true);
         }
 
 
