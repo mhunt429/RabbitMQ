@@ -1,0 +1,16 @@
+version: '3.4'
+
+services:
+  publisher:
+    image: publisher:latest
+    build:
+      context: ./publisher
+      dockerfile: Dockerfile
+
+  worker:
+    image: worker:latest
+    depends_on:
+      - "publisher"
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
